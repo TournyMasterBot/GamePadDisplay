@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GamePadGameMachine;
+using System;
+using System.Threading.Tasks;
 
 namespace GamePadDisplay
 {

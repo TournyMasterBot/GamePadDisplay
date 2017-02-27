@@ -1,20 +1,24 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
-namespace GamePadDisplay
+namespace GamePadGameMachine
 {
-    public class GamePadGame : Microsoft.Xna.Framework.Game
+    /// <summary>
+    /// This is the main type for your game.
+    /// </summary>
+    public class Game1 : Game
     {
         GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private Dictionary<string, bool> ActiveKeys = new Dictionary<string, bool>();
         private Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-
-        public GamePadGame()
+        public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -101,6 +105,7 @@ namespace GamePadDisplay
             spriteBatch.Draw(Textures["Controller"], Vector2.Zero);
 
             var gamepadState = GamePad.GetState(PlayerIndex.One);
+            SynchronousSocketClient.wait.Set();
             DrawState(ref gamepadState);
 
             spriteBatch.End();
@@ -112,58 +117,70 @@ namespace GamePadDisplay
 
         private void DrawState(ref GamePadState gamepadState)
         {
+            var sendState = false;
             // Left & Right Bumpers - Triggers
             if(gamepadState.Buttons.LeftShoulder == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["LB"], new Vector2(100, 97));
             }
             if(gamepadState.Triggers.Left == 1)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["LT"], new Vector2(160, 41));
             }
             if(gamepadState.Buttons.RightShoulder == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["RB"], new Vector2(514, 97));
             }
             if(gamepadState.Triggers.Right == 1)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["RT"], new Vector2(535, 41));
             }
 
             // Key Buttons
             if(gamepadState.Buttons.A == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["A"], new Vector2(547, 269));
             }
 
             if(gamepadState.Buttons.B == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["B"], new Vector2(606, 221));
             }
 
             if(gamepadState.Buttons.Y == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["Y"], new Vector2(553, 177));
             }
-            
+
             if(gamepadState.Buttons.X == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["X"], new Vector2(497, 226));
             }
 
             // Sticks
             if(gamepadState.Buttons.LeftStick == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["LeftStickClick"], new Vector2(119, 233));
             }
 
             if(gamepadState.Buttons.RightStick == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["LeftStickClick"], new Vector2(423, 335));
             }
 
             if(gamepadState.ThumbSticks.Left.X != 0 || gamepadState.ThumbSticks.Left.Y != 0)
             {
+                sendState = true;
                 var xStart = 162;
                 var yStart = 270;
                 var point1 = new Vector2(xStart, yStart);
@@ -173,6 +190,7 @@ namespace GamePadDisplay
 
             if(gamepadState.ThumbSticks.Right.X != 0 || gamepadState.ThumbSticks.Right.Y != 0)
             {
+                sendState = true;
                 var xStart = 467;
                 var yStart = 373;
                 var point1 = new Vector2(xStart, yStart);
@@ -183,33 +201,54 @@ namespace GamePadDisplay
             // D-Pad
             if(gamepadState.DPad.Left == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["DPadLeft"], new Vector2(215, 336));
             }
 
             if(gamepadState.DPad.Down == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["DPadDown"], new Vector2(241, 369));
             }
 
             if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["DPadRight"], new Vector2(287, 340));
             }
 
             if(gamepadState.DPad.Up == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["DPadUp"], new Vector2(243, 315));
             }
 
             // Menus
             if(gamepadState.Buttons.Start == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["Start"], new Vector2(428, 237));
             }
 
             if(gamepadState.Buttons.Back == ButtonState.Pressed)
             {
+                sendState = true;
                 spriteBatch.Draw(Textures["Back"], new Vector2(279, 236));
+            }
+            if(sendState && SynchronousSocketClient.delayState.ElapsedMilliseconds > Program.config.ClientUpdateRate)
+            {
+                sendState = true;
+                SynchronousSocketClient.SendQueue.Enqueue(JsonConvert.SerializeObject(new
+                {
+                    Buttons = gamepadState.Buttons,
+                    Triggers = gamepadState.Triggers,
+                    DPad = gamepadState.DPad,
+                    leftstickX = gamepadState.ThumbSticks.Left.X,
+                    leftstickY = gamepadState.ThumbSticks.Left.Y,
+                    rightstickX = gamepadState.ThumbSticks.Right.X,
+                    rightstickY = gamepadState.ThumbSticks.Right.Y
+                }));
+                SynchronousSocketClient.delayState.Restart();
             }
         }
 
