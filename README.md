@@ -1,4 +1,4 @@
-# GamePadDisplay [FOR USE IN SINGLE COMPUTER SCENARIO]
+# GamePadDisplay [SINGLE COMPUTER SCENARIO]
 An extremely basic gamepad display for OBS studio
 
 # Instructions to use as OBS scene
@@ -13,7 +13,7 @@ An extremely basic gamepad display for OBS studio
 - Do not capture mouse
 - Do not use anti cheat compatability hook
 
-# GamePadObsMachine [FOR USE IN MULTI COMPUTER SCENARIO -- SERVER]
+# GamePadObsMachine [MULTI COMPUTER SCENARIO -- SERVER]
 
 - Allow application through firewall (Should prompt automatically, if not add TCP port 42420)
 - Run application
@@ -28,7 +28,7 @@ An extremely basic gamepad display for OBS studio
 
 * If you are seeing extended lag, you can update config.ini to lower the update rate value, if you are seeing flickering buttons, increase the value for the update rate. The update rate is the time in milliseconds input needs to be received from the client before resetting the gamepad to the default state. (This number should be within 30ms of the gaming machine config in most scenarios.)
 
-# GamePadGameMachine [FOR USE IN MULTI COMPUTER SCENARIO -- GAMING MACHINE]
+# GamePadGameMachine [MULTI COMPUTER SCENARIO -- GAMING MACHINE]
 
 - Update config.ini to use the server computers IP (IE: 192.168.1.6 would be the remote OBS machine)
 - Ensure server application is running
